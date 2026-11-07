@@ -1,54 +1,6 @@
-# 🏛️ Dolores Hoy — 5 APIs con seguridad
+# 🏛️ Dolores Hoy 
 
-Tablero en Flutter hecho con **TDD** que muestra en una sola pantalla 5 datos de Dolores Hidalgo, cada uno de una API gratuita distinta, aplicando **buenas prácticas de seguridad**.
 
-| # | API | Qué muestra | ¿Clave? |
-|---|---|---|---|
-| 1 | Open-Meteo | Clima actual de Dolores Hidalgo | No |
-| 2 | Frankfurter | Tipo de cambio peso-dólar-euro | No |
-| 3 | Nager.Date | Próximos días festivos de México | No |
-| 4 | Wikipedia (es) | Resumen de "Dolores Hidalgo" | No (recibe texto del usuario) |
-| 5 | NASA APOD | Foto astronómica del día | **Sí** |
-
-- **Materia:** Desarrollo Móvil Integral · UTNG
-- **Profesor:** Anastacio Rodríguez García
-- **Alumna:** Yaneli Sánchez Cárdenas · Grupo GTID244
-
----
-
-## 📋 ¿Qué se hizo? (resumen por ronda)
-
-| Ronda | Qué se construyó | Archivo(s) |
-|---|---|---|
-| 0 | Proyecto con el paquete `http`, `.gitignore` para secretos y `secrets.json.example` | `pubspec.yaml`, `.gitignore` |
-| 1 | Se leyó la documentación de las 5 APIs y se probaron las URLs en el navegador | — |
-| 2 | `ClienteSeguro`: una sola "puerta" a internet con 6 defensas (solo https, timeout de 8 s, límite de 1 MB, JSON validado, errores traducidos, User-Agent) | `cliente_seguro.dart`, `excepciones.dart` |
-| 3 | API 1 · Clima, con validación de coordenadas | `servicios.dart`, `modelos.dart` |
-| 4 | API 2 · Tipo de cambio (tasa inversa: 1 / 0.05 = 20 pesos) | `servicios.dart`, `modelos.dart` |
-| 5 | API 3 · Festivos, con la fecha de "hoy" inyectada para que las pruebas no caduquen | `servicios.dart` |
-| 6 | API 4 · Wikipedia: validar, codificar con `pathSegments` (evita *path injection*) y aceptar solo imágenes https | `servicios.dart` |
-| 7 | API 5 · NASA: la clave entra con `--dart-define`, nunca se imprime completa y se valida antes de pedir | `config_claves.dart` |
-| 8 | ViewModel: las 5 APIs en paralelo; si una falla, las otras siguen funcionando | `tablero_viewmodel.dart` |
-| 9 | Pantalla con `TarjetaCarga<T>` y "jalar para recargar" | `pantalla_tablero.dart`, `main.dart` |
-
-### Ciclo TDD
-🔴 **ROJO:** prueba primero (falla) → 🟢 **VERDE:** código mínimo → 🔵 **REFACTOR:** ordenar sin romper nada.
-Todas las pruebas usan `MockClient`: **no necesitan internet** y no gastan el límite de las APIs.
-
-### Corrección hecha al código del manual
-En `ClienteSeguro.redactar()`, Dart convierte `***` en `%2A%2A%2A` dentro de la URL, y por eso la prueba `contains('api_key=***')` no pasaba. Se agregó `.replaceAll('%2A', '*')` para que el log muestre `api_key=***`.
-
-### Estructura
-```
-lib/
-  dominio/       <- excepciones y modelos
-  datos/         <- ClienteSeguro, ConfigClaves y los 5 servicios
-  presentacion/  <- ViewModel y pantalla
-  main.dart
-test/            <- 39 pruebas (cliente, seguridad, servicios, viewmodel)
-```
-
----
 
 ## ▶️ Cómo ejecutarlo
 
@@ -123,13 +75,3 @@ flutter run --dart-define-from-file=secrets.json
 ![P4](capturas/P4_resiliencia.png)
 
 ---
-
-## ✅ Checklist de seguridad
-- [x] Ninguna clave en el código ni en el repositorio (`secrets.json` ignorado).
-- [x] Todas las peticiones usan https y el cliente rechaza http.
-- [x] Toda petición tiene timeout y límite de tamaño.
-- [x] Las URLs se construyen con `Uri.https` / `pathSegments`.
-- [x] Se valida la entrada del usuario y la salida del servidor.
-- [x] Los logs usan `redactar()` y `ConfigClaves` no imprime la clave completa.
-- [x] Los errores inesperados muestran un mensaje genérico.
-- [x] Una API caída no afecta a las demás.
